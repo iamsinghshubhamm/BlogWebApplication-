@@ -1,0 +1,171 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useParams } from "react-router-dom";
+
+const BlogForm = () => {
+  const { id } = useParams();
+  const isUpdate = id !== undefined;
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    imageUrl: "",
+    category: {
+      title: "",
+      href: "",
+    },
+    author: {
+      name: "",
+      role: "",
+      href: "",
+      imageUrl: "",
+    },
+  });
+
+  useEffect(() => {
+    if (isUpdate) {
+      fetchBlog(id);
+    }
+  }, [isUpdate, id]);
+
+  const fetchBlog = async (id) => {
+    try {
+      const { data } = await axios.get(`/api/v1/blogs/getblog/${id}`);
+      if (data.success) {
+        setFormData(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching blog:", error);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const url = isUpdate ? `/api/v1/blogs/update/${id}` : "/api/v1/blogs/createblog";
+      const method = isUpdate ? "put" : "post";
+      const { data } = await axios[method](url, formData);
+      if (data.success) {
+        toast.success(isUpdate ? "Blog updated successfully" : "Blog created successfully");
+      } else {
+        toast.error(data.message);
+      }
+      setFormData({
+        title: "",
+        description: "",
+        imageUrl: "",
+        category: {
+          title: "",
+          href: "",
+        },
+        author: {
+          name: "",
+          role: "",
+          href: "",
+          imageUrl: "",
+        },
+      });
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex justify-center items-center">
+      <div className="bg-white p-8 rounded shadow-md w-full">
+        <h2 className="text-2xl font-semibold mb-4">{isUpdate ? "Update" : "Create"} Blog</h2>
+        <form className="w-full flex gap-6" onSubmit={handleSubmit}>
+          <div className="w-full">
+            <div className="mb-4">
+              <label className="text-blue-600 font-semibold mb-2">Title</label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="text-blue-600 font-semibold mb-2">Description</label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="text-blue-600 font-semibold mb-2">Image URL</label>
+              <input
+                type="text"
+                name="imageUrl"
+                value={formData.imageUrl}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="text-blue-600 font-semibold mb-2">Category Title</label>
+              <input
+                type="text"
+                name="categoryTitle"
+                value={formData.category.title}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500"
+              />
+            </div>
+          </div>
+          <div className="w-full">
+            <div className="mb-4">
+              <label className="text-blue-600 font-semibold mb-2">Author Name</label>
+              <input
+                type="text"
+                name="authorName"
+                value={formData.author.name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="text-blue-600 font-semibold mb-2">Author Role</label>
+              <input
+                type="text"
+                name="authorRole"
+                value={formData.author.role}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="text-blue-600 font-semibold mb-2">Author Image URL</label>
+              <input
+                type="text"
+                name="authorImageUrl"
+                value={formData.author.imageUrl}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <button
+              type="submit"
+              className="justify-self-end bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
+            >
+              {isUpdate ? "Update Blog" : "Create Blog"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default BlogForm;
